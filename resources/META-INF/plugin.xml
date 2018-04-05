@@ -1,0 +1,22 @@
+<idea-plugin>
+  <id>com.imyyq.plugin.android.string</id>
+  <name>Extract string resource</name>
+  <version>1.0</version>
+  <vendor email="imyyq.star@gmail.com" url="https://github.com/imyyq-star/ExtractStringResource">imyyq</vendor>
+
+  <description><![CDATA[
+    扩展 AS 的 “Extract string resource” 功能，自动翻译中文字符串。
+  ]]></description>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable instance="com.imyyq.plugin.android.ExtractStringResourceConfigure"/>
+  </extensions>
+
+  <actions>
+    <action id="ExtractStringResource" class="com.imyyq.plugin.android.action.ExtractStringResourceAction"
+            text="Auto extract string resource">
+      <keyboard-shortcut first-keystroke="shift alt A" keymap="$default"/>
+      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+    </action>
+  </actions>
+</idea-plugin>
