@@ -10,55 +10,45 @@ import javax.swing.event.DocumentListener;
 public class ExtractStringResourceConfiguration
 {
     private JPanel mPanel;
-    private JLabel mLable;
-    private JTextField mPrefix;
-    private JTextPane mBefore;
-    private JTextPane mAfter;
 
-    private String stringContext = ".getString(R.string.xxx);\r\n";
+    private JTextField mPrefix; // 前缀
+    private JTextField mAppId; // AppID
+    private JTextField mSecurityKey; // 密钥
 
-    private String mPrefixString = "";
-
-    public ExtractStringResourceConfiguration(String prefix){
-
-        mPrefixString = prefix;
-
+    public ExtractStringResourceConfiguration(String prefix, String appId, String securityKey)
+    {
         mPrefix.setText(prefix);
-
-        mAfter.setText(mPrefixString + stringContext);
-
-        mPrefix.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                mPrefixString = mPrefix.getText();
-                mAfter.setText(mPrefixString + stringContext);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                mPrefixString = mPrefix.getText();
-                mAfter.setText(mPrefixString + stringContext);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                mPrefixString = mPrefix.getText();
-                mAfter.setText(mPrefixString + stringContext);
-            }
-        });
-
+        mAppId.setText(appId);
+        mSecurityKey.setText(securityKey);
     }
 
-    public JComponent getComponent(){
+    public JComponent getComponent()
+    {
         return mPanel;
     }
 
-    public String getPrefix(){
-        return mPrefixString;
+    // 取得前缀
+    public String getPrefix()
+    {
+        return mPrefix.getText();
     }
 
-    public void reset(){
-        mPrefixString = "";
-        mPrefix.setText(mPrefixString);
+    // 取得AppID
+    public String getAppId()
+    {
+        return mAppId.getText();
+    }
+
+    // 取得密钥
+    public String getSecurityKey()
+    {
+        return mSecurityKey.getText();
+    }
+
+    public void reset()
+    {
+        mPrefix.setText("");
+        mAppId.setText("");
+        mSecurityKey.setText("");
     }
 }

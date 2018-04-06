@@ -1,6 +1,6 @@
 package com.imyyq.plugin.android.entity;
 
-import com.imyyq.plugin.android.util.TranslateUtil;
+import com.imyyq.plugin.android.util.TransApi;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.xml.XmlFile;
@@ -8,7 +8,8 @@ import com.intellij.psi.xml.XmlFile;
 /**
  * Created by imyyq on 2017/4/16.
  */
-public class WriteObj {
+public class WriteObj
+{
 
     private String translationName;
     private String value;
@@ -17,13 +18,14 @@ public class WriteObj {
 
     private PsiFile psiFile;
 
-    public WriteObj(PsiFile psiFile, String prefix, Selection selection) {
-
+    public WriteObj(String appid, String securityKey, PsiFile psiFile, String prefix,
+                    String value, String translationName)
+    {
         this.psiFile = psiFile;
         this.prefix = prefix;
 
-        value = selection.getText();
-        translationName = TranslateUtil.requestTranslate(value);
+        this.value = value;
+        this.translationName = translationName;
     }
 
     public String getValue()
@@ -55,12 +57,14 @@ public class WriteObj {
     {
         String s = getWriteToJavaStr();
         return s == null
-                ? getWriteToXMLStr() : s;
+                ? getWriteToXMLStr()
+                : s;
     }
 
     private String getWriteToJavaStr()
     {
-        if (psiFile instanceof PsiJavaFile) {
+        if (psiFile instanceof PsiJavaFile)
+        {
             return prefix + ".getString(R.string." + translationName + ")";
         }
         return null;
@@ -68,7 +72,8 @@ public class WriteObj {
 
     private String getWriteToXMLStr()
     {
-        if (psiFile instanceof XmlFile) {
+        if (psiFile instanceof XmlFile)
+        {
             return "@string/" + translationName;
         }
         return null;

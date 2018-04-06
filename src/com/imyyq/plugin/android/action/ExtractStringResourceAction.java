@@ -2,8 +2,10 @@ package com.imyyq.plugin.android.action;
 
 import com.imyyq.plugin.android.ExtractStringResourceConfigure;
 import com.imyyq.plugin.android.entity.Selection;
+import com.imyyq.plugin.android.entity.TransResult;
 import com.imyyq.plugin.android.entity.WriteObj;
 import com.imyyq.plugin.android.util.TextUtils;
+import com.imyyq.plugin.android.util.TransApi;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -36,13 +38,13 @@ import org.jetbrains.annotations.NotNull;
 public class ExtractStringResourceAction
         extends AnAction
 {
+    private TransApi mTransApi = new TransApi();
 
     private Selection mSelection;
 
     @Override
     public void actionPerformed(AnActionEvent e)
     {
-
         // 拿到当前操作的编辑，项目，文件
         Editor editor = e.getRequiredData(CommonDataKeys.EDITOR);
         final Project project = e.getRequiredData(CommonDataKeys.PROJECT);
@@ -57,16 +59,16 @@ public class ExtractStringResourceAction
         // 获取前缀，比如 getApplication()，如果为空则需要填入
         String prefix = PropertiesComponent.getInstance().getValue(
                 ExtractStringResourceConfigure.KEY_PREFIX, "");
-        if (TextUtils.isEmpty(prefix))
+        String appID = PropertiesComponent.getInstance().getValue(
+                ExtractStringResourceConfigure.KEY_APP_ID, "");
+        String securityKey = PropertiesComponent.getInstance().getValue(
+                ExtractStringResourceConfigure.KEY_SECURITY_KEY, "");
+        if (TextUtils.isEmpty(prefix) || TextUtils.isEmpty(appID) || TextUtils.isEmpty(securityKey))
         {
-            prefix = Messages.showInputDialog(project,
-                    "请先配置前缀: \r\n比如:\r设置 \"getApplication()\"\rBefore:\r.getString(R.string.xxx)\rAfter:\rgetApplication().getString(R.string.xxx)",
-                    "配置", null);
-            if (!TextUtils.isEmpty(prefix))
-            {
-                PropertiesComponent.getInstance().setValue(
-                        ExtractStringResourceConfigure.KEY_PREFIX, prefix);
-            }
+            Messages.showMessageDialog(
+                    "请打开：File -> Settings -> Other Settings -> Auto extract string resource\r\n" + "设置前缀，百度翻译的AppID和密钥",
+                    "提示", null);
+            return;
         }
 
         // 当前操作的必须是 java 文件或者是 xml 文件
@@ -89,8 +91,28 @@ public class ExtractStringResourceAction
             return;
         }
 
+        // 翻译
+        TransResult transResult = TransApi.getTransResult(appID, securityKey, mSelection.getText(),
+                "zh", "en");
+
+        if (transResult == null)
+        {
+            Messages.showErrorDialog(project, "翻译出错，请检查 AppID 和 密钥", "错误");
+            return;
+        }
+        else if (transResult.getTrans_result() == null || transResult.getTrans_result().isEmpty() || TextUtils.isEmpty(
+                transResult.getTrans_result().get(0).getDst()))
+        {
+            Messages.showErrorDialog(project,
+                    "翻译出错，请检查 AppID 和 密钥。\\r\\n错误信息：" + transResult.getError_msg() + "\r\n" + "错误码：" + transResult.getError_code(),
+                    "错误");
+            return;
+        }
+
         // 生成目标
-        WriteObj writeObj = new WriteObj(psiFile, prefix, mSelection);
+        WriteObj writeObj = new WriteObj(appID, securityKey, psiFile, prefix, mSelection.getText(),
+                transResult.getTrans_result().get(0).getDst().toLowerCase().trim().replace(
+                        ' ', '_').replaceAll("[^A-Za-z0-9]+", "_"));
 
         // 目标 xml 文件
         String fileName = "strings.xml";
